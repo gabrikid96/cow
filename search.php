@@ -4,6 +4,7 @@
 include('header.php');
 $dbWorld = new PDO("mysql:dbname=world;host=localhost", "root","");
 $dbWorld->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$dbWorld->exec("SET NAMES 'utf8'");
 
 try{
     $sql = "CREATE TABLE flights (
@@ -29,7 +30,7 @@ try {
     <h1 class="text-center">Search Flight</h1>
 
     <div class="container text-center">
-        <form action="servidor.php" method="GET">
+        <form id="search-form"action="servidor.php" method="GET">
             <div class="form-group">
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
@@ -64,7 +65,7 @@ try {
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <label for="seats">Seats number</label>
-                        <input class="form-control" type="number" id="seats" name="seats" placeholder="Please select the seats you want">
+                        <input max="10" min="0" step="1" class="form-control" type="number" id="seats" name="seats" placeholder="Please select the seats you want">
                     </div>
                 </div>
                 <br>
@@ -82,7 +83,7 @@ try {
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <label for="email">Email</label>
-                        <input class="form-control" type="text" id="email" name="email" 
+                        <input class="form-control" type="email" id="email" name="email" 
                             placeholder="Enter your email">
                     </div>
                 </div>

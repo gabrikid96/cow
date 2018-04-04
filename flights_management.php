@@ -470,7 +470,7 @@ function getFlightsTable($flights){
                     </div>
 
                     <div class="col-md-2">
-                        <input required class="form-control" min="0" type="number" id="seats" name="seats" placeholder="Seats availables">
+                        <input required max="200" min="0" step="1" class="form-control" min="0" type="number" id="seats" name="seats" placeholder="Seats availables">
                     </div>
                     <input class="btn btn-success" type="submit" value="Create Flight" name="create_flight">
                 </div>

@@ -2,6 +2,29 @@
 
 <?php
 include('header.php');
+$dbWorld = new PDO("mysql:dbname=world;host=localhost", "root","");
+$dbWorld->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+try{
+    $sql = "CREATE TABLE flights (
+        ID int NOT NULL AUTO_INCREMENT,
+        departure_id INT NOT NULL,
+        arrival_id INT NOT NULL,
+        departure_date DATETIME  NOT NULL,
+        arrival_date DATETIME NOT NULL,
+        seats_available INT NOT NULL,
+        PRIMARY KEY (ID)
+    );";
+    $dbWorld->exec($sql);
+}catch(PDOException $ex){
+}
+
+try {
+    $departures = $dbWorld->query("SELECT id, name from `cities` order by name ASC");
+    $arrivals = $dbWorld->query("SELECT id, name from `cities` order by name ASC");
+} catch (PDOException $ex) {
+    echo getAlertError("Error on get Citiees in World database.". $ex->getMessage());
+}
 ?>
     <h1 class="text-center">Search Flight</h1>
 
@@ -12,12 +35,13 @@ include('header.php');
                     <div class="col-md-6 col-md-offset-3">
                         <label for="departure">Departure</label>
                         <select class="form-control" id="departure" name="departure">
-                            <option value="" selected>Please select departure</option>
-                            <option value="Barcelona">Barcelona</option>
-                            <option value="London">London</option>
-                            <option value="New_york">New York</option>
-                            <option value="Sidney">Sidney</option>
-                            <option value="Tokio">Tokio</option>
+                            <option value="" selected>Departure</option>
+                            <?php
+                            foreach ($departures as $departure) {
+                                $value = $departure['name'];
+                                $id = $departure['id'];
+                                echo "<option value='$id'> $value </option>";
+                            }?>
                         </select>
                     </div>
                 </div>
@@ -26,12 +50,13 @@ include('header.php');
                     <div class="col-md-6 col-md-offset-3">
                         <label for="destination">Destination</label>
                         <select class="form-control" id="destination" name="destination">
-                            <option value="" selected>Please select destination</option>
-                            <option value="Rome">Rome</option>
-                            <option value="Berlin">Berlin</option>
-                            <option value="Paris">Paris</option>
-                            <option value="Napoli">Napoli</option>
-                            <option value="Tokio">Madrid</option>
+                            <option value="" selected>Destination</option>
+                            <?php
+                            foreach ($arrivals as $arrival) {
+                                $value = $arrival['name'];
+                                $id = $arrival['id'];
+                                echo "<option value='$id'> $value </option>";
+                            }?>
                         </select>
                     </div>
                 </div>
@@ -49,8 +74,8 @@ include('header.php');
                         <input class="form-control" type="date" id="departureDate" name="departureDate" placeholder="Please select the departure date">
                     </div>
                     <div class="col-md-3">
-                        <label for="returnDate">Return Date</label>
-                        <input class="form-control" type="date" id="returnDate" name="returnDate" placeholder="Please select the return date">
+                        <label for="arrivalDate">Return Date</label>
+                        <input class="form-control" type="date" id="arrivalDate" name="arrivalDate" placeholder="Please select the arrival date">
                     </div>
                 </div>
                 <br>

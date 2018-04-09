@@ -92,6 +92,8 @@ try {
                     <button class="btn btn-success">Search flight</button>
                 </div>
             </div>
+            <div id='errorForm' class='alert alert-danger text-center col-md-6 col-md-offset-3' role='alert' style='margin-top: 10px; visibility: hidden;'>
+            </div>
         </form>
     </div>
     <?php

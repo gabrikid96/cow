@@ -30,35 +30,28 @@ try {
     <h1 class="text-center">Search Flight</h1>
 
     <div class="container text-center">
+
+        <!--Make sure the form has the autocomplete function switched off:-->
+        
+
         <form id="search-form"action="servidor.php" method="GET">
             <div class="form-group">
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <label for="departure">Departure</label>
-                        <select class="form-control" id="departure" name="departure">
-                            <option value="" selected>Departure</option>
-                            <?php
-                            foreach ($departures as $departure) {
-                                $value = $departure['name'];
-                                $id = $departure['id'];
-                                echo "<option value='$id'> $value </option>";
-                            }?>
-                        </select>
+                        <div class="autocomplete">
+                            <input autocomplete="off" id="departure" type="text" name="departure" class="form-control" placeholder="Departure city">
+                        </div>
                     </div>
                 </div>
                 <br>
+
                 <div class="row">
                     <div class="col-md-6 col-md-offset-3">
                         <label for="destination">Destination</label>
-                        <select class="form-control" id="destination" name="destination">
-                            <option value="" selected>Destination</option>
-                            <?php
-                            foreach ($arrivals as $arrival) {
-                                $value = $arrival['name'];
-                                $id = $arrival['id'];
-                                echo "<option value='$id'> $value </option>";
-                            }?>
-                        </select>
+                        <div class="autocomplete">
+                            <input autocomplete="off" id="destination" type="text" name="destination" class="form-control" placeholder="Destination city">
+                        </div>
                     </div>
                 </div>
                 <br>
@@ -96,6 +89,7 @@ try {
             </div>
         </form>
     </div>
+    
     <?php
 include('footer.html');
 ?>

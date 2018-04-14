@@ -275,7 +275,7 @@ function getFlightsTable($flights){
             <form method="POST">
                 <div class="row" style="margin: 5px;">
                     <div class="col-md-2">
-                        <input class="form-control" type="text" id="city" name="city" placeholder="City">
+                        <input autocomplete="off" class="form-control" type="text" id="city" name="city" placeholder="City">
                     </div>
                     <div class="col-md-2">
                         <input class="form-control" type="text" id="country" name="country" placeholder="Country">

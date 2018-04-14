@@ -55,17 +55,6 @@ if (arrivalDate){
     });
 }
 
-// if ($("input[type=date]")){
-//     $$("input[type=date]").forEach(function(element) {
-//         element.observe('click', function(){
-//             check_date(element);
-//         });
-//         element.observe('change', function(){
-//             check_date(element);
-//         });
-//     });
-// }
-
 if ($('search-form')){
     $('search-form').onsubmit =  function(e) { 
         check_select(departure);
@@ -82,6 +71,14 @@ if ($('search-form')){
         //if (hasError) e.stop();
         return true;
     };
+
+    // new Ajax.Request("lookup_account.php", {
+    //     method: "get",
+    //     parameters: {name: "Ed Smith", age: 29, password: "abcdef"},
+    //     onFailure: ajaxFailure,
+    //     onException: ajaxFailure
+    //     });
+        
 }
 
 

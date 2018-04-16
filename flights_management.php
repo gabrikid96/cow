@@ -132,9 +132,9 @@ function insert_grade($db){
 function insert_flight($db){
     try{
         $departure_id = $_POST["departure"];
-        $arrival_id = $_POST["arrival"];
-        $departure_date = $db->quote(date('Y-m-d', strtotime(htmlentities($_POST['departure-date']))));
-        $arrival_date = $db->quote(date('Y-m-d', strtotime(htmlentities($_POST['arrival-date']))));
+        $arrival_id = $_POST["destination"];
+        $departure_date = $db->quote(date('Y-m-d', strtotime(htmlentities($_POST['departureDate']))));
+        $arrival_date = $db->quote(date('Y-m-d', strtotime(htmlentities($_POST['arrivalDate']))));
         $seats = $_POST["seats"];
 
         $sql = "INSERT INTO `flights` (departure_id, arrival_id, departure_date, arrival_date, seats_available) VALUES  ($departure_id, $arrival_id, $departure_date, $arrival_date, $seats)";
@@ -336,13 +336,13 @@ function getFlightsTable($flights){
         <!-- Body -->
         <div id="simpsons" class="panel-collapse collapse">
             <div class="container">
-            <form method="POST">
+            <form method="POST" id="student-form">
                 <div class="row" style="margin: 5px;">
                     <div class="col-md-3">
-                        <input class=<?php echo ($student_name_error ? "'form-control error-input'" : "'form-control'");  ?> type="text" id="name-student" name="name-student" placeholder="Student's name">
+                        <input class="form-control" required type="text" id="name-student" name="name-student" placeholder="Student's name">
                     </div>
                     <div class="col-md-3">
-                        <input class=<?php echo ($student_email_error ? "'form-control error-input'" : "'form-control'");  ?> type="email" id="email-student" name="email-student" placeholder="Email">
+                        <input class="form-control" type="email" id="email-student" name="email-student" placeholder="Email">
                     </div>
                     <div class="col-md-3">
                         <input class="form-control" type="text" id="password-student" name="password-student" placeholder="Password">
@@ -350,13 +350,13 @@ function getFlightsTable($flights){
                     <input class="btn btn-success" type="submit" value="Create Student" name="create_student">
                 </div>
             </form>
-            <form method="POST">
+            <form method="POST" id="course-form">
                 <div class="row" style="margin: 5px;">
                     <div class="col-md-3">
-                        <input class=<?php echo ($course_name_error ? "'form-control error-input'" : "'form-control'");  ?>  type="text" id="name" name="name" placeholder="Course name">
+                        <input class="form-control"  type="text" id="name" name="name" placeholder="Course name" required>
                     </div>
                     <div class="col-md-3">
-                        <select class=<?php echo ($course_teacher_error ? "'form-control error-input'" : "'form-control'");  ?>  id="teachers" name="teachers">
+                        <select class="form-control"  id="teachers" name="teachers" required>
                                 <option value="" disabled selected>Teacher</option>
                                 <?php
                                 foreach ($teachers as $teacher) {
@@ -369,11 +369,11 @@ function getFlightsTable($flights){
                     <input class="btn btn-success" type="submit" value="Create Course" name="create_course">
                 </div>
             </form>
-            <form method="POST">
+            <form method="POST" id="grade-form">
                 <div class="row" style="margin: 5px;">
                     <div class="col-md-3">
-                    <select class=<?php echo ($student_error ? "'form-control error-input'" : "'form-control'");  ?> id="student" name="student">
-                            <option value="" selected>Student</option>
+                    <select class="form-control" id="student" name="student" required>
+                            <option value="" disabled selected>Student</option>
                             <?php
                             foreach ($students as $student) {
                                 $value = $student['student'];
@@ -383,7 +383,7 @@ function getFlightsTable($flights){
                     </select>
                     </div>
                     <div class="col-md-3">
-                        <select class=<?php echo ($course_error ? "'form-control error-input'" : "'form-control'");  ?>  id="course" name="course">
+                        <select class="form-control"  id="course" name="course" required>
                                 <option value="" disabled selected>Course</option>
                                 <?php
                                 foreach ($courses as $course) {
@@ -394,7 +394,7 @@ function getFlightsTable($flights){
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <input class=<?php echo ($grade_error ? "'form-control error-input'" : "'form-control'");  ?> type="text" id="grade" name="grade" placeholder="Grade">
+                        <input class="form-control" type="text" id="grade" name="grade" placeholder="Grade" required>
                     </div>
                     <input class="btn btn-success" type="submit" value="Insert Grade" name="create_grade">
                 </div>
@@ -437,7 +437,7 @@ function getFlightsTable($flights){
         <!-- Body -->
         <div id="flights" class="panel-collapse collapse">
             <div class="container">
-            <form method="POST">
+            <form method="POST" id="flights-form">
                 <div class="row" style="margin: 5px;">
                     <div class="col-md-2">
                         <select required class="form-control" id="departure" name="departure">
@@ -451,7 +451,7 @@ function getFlightsTable($flights){
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <select required class="form-control" id="arrival" name="arrival">
+                        <select required class="form-control" id="destination" name="destination">
                                 <option value="" disabled selected>Arrival</option>
                                 <?php
                                 foreach ($arrivals as $arrival) {
@@ -462,11 +462,11 @@ function getFlightsTable($flights){
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <input required class="form-control" type="date" id="departure-date" name="departure-date" placeholder="Departure date">
+                        <input required class="form-control" type="date" id="departureDate" name="departureDate" placeholder="Departure date">
                     </div>
 
                     <div class="col-md-2">
-                        <input required class="form-control" type="date" id="arrival-date" name="arrival-date" placeholder="Arrival date">
+                        <input required class="form-control" type="date" id="arrivalDate" name="arrivalDate" placeholder="Arrival date">
                     </div>
 
                     <div class="col-md-2">

@@ -14,7 +14,20 @@ $$("input[type=email]").forEach(function(element){
     element.onkeyup = () => {
         check_email(element);
     }
+    element.observe('click', function(){
+        check_email(element);
+    });
 });
+
+$$("input[type=text]").forEach(function(element){
+    element.onkeyup = () => {
+        check_select(element);
+    }
+    element.observe('click', function(){
+        check_select(element);
+    });
+});
+
 if ($$("select")){
     $$("select").forEach(function(element) {
         element.observe('click', function(){
@@ -65,10 +78,11 @@ if ($('search-form')){
         check_date(arrivalDate);
         if (new Date($F(departureDate)) != "Invalid Date" && new Date($F(arrivalDate)) != "Invalid Date")
             check_dates(departureDate, arrivalDate);
-        var hasError = $('search-form').find(function(element) {
+       /* var elements =  $('search-form').getElements();
+        var hasError = elements.find(function(element) {
             return element.classList.contains("error-input");
         });
-        //if (hasError) e.stop();
+        if (hasError) e.stop();**/
         return true;
     };
 
@@ -81,11 +95,40 @@ if ($('search-form')){
         
 }
 
+if ($('flights-form')){
+    $('flights-form').onsubmit =  function(e) { 
+        check_select(departure);
+        check_select(destination);
+        check_seats();
+        check_date(departureDate);
+        check_date(arrivalDate);
+        if (new Date($F(departureDate)) != "Invalid Date" && new Date($F(arrivalDate)) != "Invalid Date")
+            check_dates(departureDate, arrivalDate);
+        var elements =  $('flights-form').getElements();
+        var hasError = elements.find(function(element) {
+            return element.classList.contains("error-input");
+        });
+        if (hasError){
+            e.stop();
+            createFormError($('flights-form'), "Departure date must be before return date.");
+        }
+        
+        return true;
+    };
+}
+
+
+function hasFormError(form){
+    var hasError = form.getElements().find(function(element) {
+        return element.classList.contains("error-input");
+    });
+    return hasError === undefined;
+}
 
 
 function check_select(element){
-    var value = parseInt($F(element));
-    if (isNaN(value)){ setError(element);return;}
+    var value = $F(element);
+    if (value === ""){ setError(element);return;}
     success(element);
 }
 
@@ -147,6 +190,15 @@ function showFormError(form, message){
         errorForm.innerText = message;
         errorForm.style.visibility = 'visible';
     }
+}
+
+function createFormError(form, message){
+    var error = document.createElement("DIV");
+    error.classList.add("alert", "alert-danger", "text-center", "col-md-6", "col-md-offset-3");
+    error.style = "margin-top: 10px";
+    error.setAttribute("role","alert");
+    error.innerText = message;
+    form.appendChild(error);
 }
 
 function removeFormError(form){

@@ -4,6 +4,40 @@ var destination = $('destination');
 var departureDate = $('departureDate');
 var arrivalDate = $('arrivalDate');
 
+document.observe("dom:loaded", function() {
+    if ($(continent)){
+        new Ajax.Request("get_data.php", {
+            method: "get",
+            parameters: {get_continents: "true"},
+            onSuccess: function(ajax){
+                if (ajax.readyState == 4 && ajax.status == 200) {
+                    var continents = ajax.responseText;
+                    var select = $(continent);
+                    select.innerHTML += continents;
+                }
+            }
+            });
+    }
+
+    if ($('flights-form')){
+        searchFlights($('flights-form'));
+    }
+
+    if (departure && departure.nodeName == "SELECT" && destination && destination.nodeName == "SELECT"){
+        new Ajax.Request("get_data.php", {
+            method: "get",
+            parameters: {get_cities: "true"},
+            onSuccess: function(ajax){
+                if (ajax.readyState == 4 && ajax.status == 200) {
+                    var cities = ajax.responseText;
+                    departure.innerHTML += cities;
+                    destination.innerHTML += cities;
+                }
+            }
+        });
+    }
+});
+
 if (seats){
     seats.onkeyup = () =>{
         check_seats();
@@ -78,22 +112,69 @@ if ($('search-form')){
         check_date(arrivalDate);
         if (new Date($F(departureDate)) != "Invalid Date" && new Date($F(arrivalDate)) != "Invalid Date")
             check_dates(departureDate, arrivalDate);
-       /* var elements =  $('search-form').getElements();
-        var hasError = elements.find(function(element) {
-            return element.classList.contains("error-input");
-        });
-        if (hasError) e.stop();**/
-        return true;
-    };
-
-    // new Ajax.Request("lookup_account.php", {
-    //     method: "get",
-    //     parameters: {name: "Ed Smith", age: 29, password: "abcdef"},
-    //     onFailure: ajaxFailure,
-    //     onException: ajaxFailure
-    //     });
-        
+        searchFlights(this);
+        return false;
+    };   
 }
+function searchFlights(form){
+    new Ajax.Request("get_data.php", {
+        method: "get",
+        parameters: {search_flights: "true", departure: $F(departure), destination: $F(destination), departureDate: $F(departureDate), arrivalDate: $F(arrivalDate), seats: $F(seats)   },
+        onSuccess: function(ajax){
+            if (ajax.readyState == 4 && ajax.status == 200) {
+                var flights = ajax.responseText;
+                if ($('flights')){
+                    $('flights').innerHTML = flights;
+                }else{
+                    var flightsDiv = document.createElement("DIV");
+                    flightsDiv.id = "flights";
+                    flightsDiv.innerHTML = flights;
+                    form.parentNode.appendChild(flightsDiv);
+                }                
+            }else{
+                createFormError(form, "Error on search");
+            }
+        }
+        });
+        return false;
+}     
+
+
+
+if ($('cities-form')){
+    $('cities-form').onsubmit =  function(e) { 
+        searchCities(this);
+        return false;
+    };    
+    function searchCities(form){
+        var city = $("city");
+        var country = $("country");
+        var country_code = $("country-code");
+        var continent = $("continent");
+        new Ajax.Request("get_data.php", {
+            method: "get",
+            parameters: {search_cities: "true", city_search: $F(city), country: $F(country), country_code: $F(country_code), continent: $F(continent)},
+            onSuccess: function(ajax){
+                if (ajax.readyState == 4 && ajax.status == 200) {
+                    var cities = ajax.responseText;
+                    if ($('cities_result')){
+                        $('cities_result').innerHTML = cities;
+                    }else{
+                        var citiesDiv = document.createElement("DIV");
+                        citiesDiv.id = "cities_result";
+                        citiesDiv.innerHTML = cities;
+                        form.parentNode.appendChild(citiesDiv);
+                    }                
+                }else{
+                    createFormError(form, "Error on search");
+                }
+            }
+            });
+            return false;
+    }
+       
+}
+
 
 if ($('flights-form')){
     $('flights-form').onsubmit =  function(e) { 
@@ -111,10 +192,40 @@ if ($('flights-form')){
         if (hasError){
             e.stop();
             createFormError($('flights-form'), "Departure date must be before return date.");
+        }else{
+            createFlight(this);
+            
         }
         
-        return true;
+        return false;
     };
+    function createFlight(form){
+        new Ajax.Request("get_data.php", {
+            method: "post",
+            parameters: {create_flight: "true", departure: $F(departure), destination: $F(destination), departureDate: $F(departureDate), arrivalDate: $F(arrivalDate), seats: $F(seats)   },
+            onSuccess: function(ajax){
+                if (ajax.readyState == 4 && ajax.status == 200) {
+                    var result = ajax.responseText;
+                    if (result == "1"){
+                        createFormSuccess(form, "Flight added succesfully.");
+                        form.reset();
+                        check_select(departure);
+                        check_select(destination);
+                        check_seats();
+                        check_date(departureDate);
+                        check_date(arrivalDate);
+                        searchFlights(form);
+                    }else{
+                        createFormError(form, "Error on insert.");
+                    }
+                    
+                }else{
+                    createFormError(form, "Error on insert.");
+                }
+            }
+            });
+            return false;
+    }  
 }
 
 
@@ -201,22 +312,15 @@ function createFormError(form, message){
     form.appendChild(error);
 }
 
+function createFormSuccess(form, message){
+    var error = document.createElement("DIV");
+    error.classList.add("alert", "alert-success", "text-center", "col-md-6", "col-md-offset-3");
+    error.style = "margin-top: 10px";
+    error.setAttribute("role","alert");
+    error.innerText = message;
+    form.appendChild(error);
+}
+
 function removeFormError(form){
     if ($("errorForm")) $("errorForm").style.visibility = 'hidden';
 }
-
-
-// function showError(element, message){
-    
-//     var found = element.getElementsByClassName("tooltiptext");
-//     if (found.length == 0){
-//         var span = document.createElement("span");
-//         //element.classList.add("tooltip");
-//         span.classList.add("tooltiptext");
-//         span.innerText = message;
-//         element.insert(span);
-//     }
-    
-/* <div class="tooltip">Hover over me
-  <span class="tooltiptext">Tooltip text</span>
-</div> */

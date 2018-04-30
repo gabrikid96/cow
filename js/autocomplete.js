@@ -1,82 +1,76 @@
 // function autocomplete(input, cities) {
 var currentFocus;
-var departureInput = $('departure');
-var destinationInput = $('destination');
-var city = $('city');
+var departureInput = $('#departure');
+var destinationInput = $('#destination');
+var city = $('#city');
 
 function closeAutocomplete(input, elmnt) {
-    $$(".autocomplete-items").forEach(function(element){
-    if (elmnt != element && elmnt != input) {
-        element.parentNode.removeChild(element);
+    $(".autocomplete-items").each(function(element){
+    if (elmnt != $(this)[0] && elmnt != input) {
+        $(this)[0].parentNode.removeChild($(this)[0]);
         }
     });
 }
 
-if (departureInput){
-    departureInput.onkeyup = (e) =>{
-    new Ajax.Request("get_data.php", {
-        method: "get",
-        parameters: {city: $F(departureInput)},
-        onSuccess: function(ajax){
-            showAutocomplete(ajax, departureInput)
-        }
+if (departureInput.length){
+    departureInput.bind('keyup',function(event){
+        $.get("get_data.php", 
+        {city: departureInput.val()},
+        function(data,status){
+            showAutocomplete(data,status, departureInput);
         });
-    }
-    document.observe('click', function(e){
-        closeAutocomplete(departureInput, e.target);
+    });
+    $(document).bind('click', function(event){
+        closeAutocomplete(departureInput, event.target);
     });
 }
 
-if (destinationInput){
-    destinationInput.onkeyup = (e) =>{
-    new Ajax.Request("get_data.php", {
-        method: "get",
-        parameters: {city: $F(destinationInput)},
-        onSuccess: function(ajax){
-            showAutocomplete(ajax, destinationInput)
-        }
+if (destinationInput.length){
+    destinationInput.bind('keyup',function(event){
+        $.get("get_data.php", 
+        {city: destinationInput.val()},
+        function(data,status){
+            showAutocomplete(data,status, destinationInput);
         });
-    }
-    document.observe('click', function(e){
-        closeAutocomplete(destinationInput, e.target);
+    });
+    $(document).bind('click', function(event){
+        closeAutocomplete(destinationInput, event.target);
     });
 }
 
-if (city){
-    city.onkeyup = (e) =>{
-    new Ajax.Request("get_data.php", {
-        method: "get",
-        parameters: {city: $F(city)},
-        onSuccess: function(ajax){
-            showAutocomplete(ajax, city)
-        }
+if (city.length){
+    city.bind('keyup',function(event){
+        $.get("get_data.php", 
+        {city: city.val()},
+        function(data,status){
+            showAutocomplete(data,status, city);
         });
-    }
-    document.observe('click', function(e){
-        closeAutocomplete(city, e.target);
+    });
+    $(document).bind('click', function(event){
+        closeAutocomplete(city, event.target);
     });
 }
 
-function showAutocomplete(ajax, input){
-    if (ajax.readyState == 4 && ajax.status == 200) {
-        var cities = ajax.responseText;
+function showAutocomplete(data,status, input){
+    if (status == "success") {
+        var cities = data;
         if (cities){
             departures = cities.split(",");
             autocomplete(input, departures.slice(0,5));
         }else{
-            closeAutocomplete(input);
+            closeAutocomplete(input[0]);
         }
     }        
 }
 
 function autocomplete(input, cities){
-    var occurrences, city, index, val = $F(input);
-    closeAutocomplete(input);
+    var occurrences, city, index, val = input.val();
+    closeAutocomplete(input[0]);
     currentFocus = -1;
     occurrences = document.createElement("DIV");
     occurrences.id = "autocomplete-list";
     occurrences.classList.add("autocomplete-items");
-    input.parentNode.appendChild(occurrences);
+    input[0].parentNode.appendChild(occurrences);
     if (cities){
         cities.forEach(function(element) {
             if (element.substr(0, val.length).toUpperCase() == val.toUpperCase()) {
@@ -84,10 +78,10 @@ function autocomplete(input, cities){
                 city.innerHTML = "<strong>" + element.substr(0, val.length) + "</strong>";
                 city.innerHTML += element.substr(val.length);
                 city.innerHTML += "<input type='hidden' value='" + element + "'>";
-                city.observe('click', function(e){
-                    input.value = $F(this.select("input")[0]);
-                    closeAutocomplete(input);
-                });
+                city.onclick = function(e){
+                    input.val(this.lastChild.value); //= $F(this.select("input")[0]);
+                    closeAutocomplete(input[0]);
+                };
                 occurrences.appendChild(city);
             }
         });

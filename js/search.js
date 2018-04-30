@@ -1,230 +1,211 @@
-var seats = $('seats');
-var departure = $('departure');
-var destination = $('destination');
-var departureDate = $('departureDate');
-var arrivalDate = $('arrivalDate');
+var seats = $('#seats');
+var departure = $('#departure');
+var destination = $('#destination');
+var departureDate = $('#departureDate');
+var arrivalDate = $('#arrivalDate');
 
-document.observe("dom:loaded", function() {
-    if ($(continent)){
-        new Ajax.Request("get_data.php", {
-            method: "get",
-            parameters: {get_continents: "true"},
-            onSuccess: function(ajax){
-                if (ajax.readyState == 4 && ajax.status == 200) {
-                    var continents = ajax.responseText;
-                    var select = $(continent);
-                    select.innerHTML += continents;
-                }
+$(document).ready(function() {
+    if ($('#continent').length){
+        $.get("get_data.php", {get_continents: "true"}, function(data,status){
+            if(status=="success"){
+                var continents = data;
+                var select = $(continent)[0];
+                select.innerHTML += continents;
             }
-            });
+        });
     }
 
-    if ($('flights-form')){
-        searchFlights($('flights-form'));
+    if ($('#flights-form').length){
+        searchFlights($('#flights-form')[0]);
     }
 
-    if (departure && departure.nodeName == "SELECT" && destination && destination.nodeName == "SELECT"){
-        new Ajax.Request("get_data.php", {
-            method: "get",
-            parameters: {get_cities: "true"},
-            onSuccess: function(ajax){
-                if (ajax.readyState == 4 && ajax.status == 200) {
-                    var cities = ajax.responseText;
-                    departure.innerHTML += cities;
-                    destination.innerHTML += cities;
-                }
+    if (departure.length && departure[0].nodeName == "SELECT" && destination.length && destination[0].nodeName == "SELECT"){
+        $.get("get_data.php", {get_cities: "true"}, function(data,status){
+            if(status=="success"){
+                var cities = data;
+                departure[0].innerHTML += cities;
+                destination[0].innerHTML += cities;
             }
         });
     }
 });
 
-if (seats){
-    seats.onkeyup = () =>{
+if ($('#seats').length){
+    $('#seats').bind('keyup', function(){
         check_seats();
-    }
+    });
 }
 
-$$("input[type=email]").forEach(function(element){
-    element.onkeyup = () => {
-        check_email(element);
-    }
-    element.observe('click', function(){
-        check_email(element);
+$("input[type=email]").each(function(element){
+    $(this).bind('keyup', function(){
+        check_email($(this));
+    });
+    $(this).bind('click', function(){
+        check_email($(this));
     });
 });
 
-$$("input[type=text]").forEach(function(element){
-    element.onkeyup = () => {
-        check_select(element);
-    }
-    element.observe('click', function(){
-        check_select(element);
+$("input[type=text]").each(function(element){
+    $(this).bind('keyup', function(){
+        check_select($(this));
+    });
+    $(this).bind('click', function(){
+        check_select($(this));
     });
 });
 
-if ($$("select")){
-    $$("select").forEach(function(element) {
-        element.observe('click', function(){
-            check_select(element);
+if ($("select").length){
+    $("select").each(function(element) {
+        $(this).bind('click', function(){
+            check_select( $(this));
         });
     });
 }
 
-if (departureDate){
-    departureDate.observe('click', function(){
-        check_date(departureDate);
-        if (new Date($F(arrivalDate)) != "Invalid Date"){
-            check_dates(departureDate, arrivalDate);
+if ($('#departureDate').length){
+    $('#departureDate').bind('click', function(){
+        check_date($(this));
+        if (new Date($('#arrivalDate').val()) != "Invalid Date"){
+            check_dates($(this), $('#arrivalDate'));
         }
     });
 
-    departureDate.observe('change', function(){
-        check_date(departureDate);
-        if (new Date($F(arrivalDate)) != "Invalid Date"){
-            check_dates(departureDate, arrivalDate);
-        }
-    });
-}
-
-if (arrivalDate){
-    arrivalDate.observe('click', function(){
-        check_date(arrivalDate);
-        if (new Date($F(departureDate)) != "Invalid Date"){
-            check_dates(departureDate, arrivalDate);
-        }
-    });
-
-    arrivalDate.observe('change', function(){
-        check_date(arrivalDate);
-        if (new Date($F(departureDate)) != "Invalid Date"){
-            check_dates(departureDate, arrivalDate);
+    $('#departureDate').bind('change', function(){
+        check_date($(this));
+        if (new Date($('#arrivalDate').val()) != "Invalid Date"){
+            check_dates($(this), $('#arrivalDate'));
         }
     });
 }
 
-if ($('search-form')){
-    $('search-form').onsubmit =  function(e) { 
-        check_select(departure);
-        check_select(destination);
+if ($('#arrivalDate').length){
+    $('#arrivalDate').bind('click', function(){
+        check_date($(this));
+        if (new Date($('#departureDate').val()) != "Invalid Date"){
+            check_dates($('#departureDate'), $(this));
+        }
+    });
+
+    $('#arrivalDate').bind('change', function(){
+        check_date($(this));
+        if (new Date($('#departureDate').val()) != "Invalid Date"){
+            check_dates($('#departureDate'), $(this));
+        }
+    });
+}
+
+if ($('#search-form').length){
+    $('#search-form').submit(function (){
+        check_select($('#departure'));
+        check_select($('#destination'));
         check_seats();
-        check_email($('email'));
-        check_date(departureDate);
-        check_date(arrivalDate);
-        if (new Date($F(departureDate)) != "Invalid Date" && new Date($F(arrivalDate)) != "Invalid Date")
+        check_email($('#email'));
+        check_date($('#departureDate'));
+        check_date($('#arrivalDate'));
+        if (new Date(departureDate.val()) != "Invalid Date" && new Date(arrivalDate.val()) != "Invalid Date")
             check_dates(departureDate, arrivalDate);
-        searchFlights(this);
+        searchFlights($(this));
         return false;
-    };   
+    }); 
 }
 function searchFlights(form){
-    new Ajax.Request("get_data.php", {
-        method: "get",
-        parameters: {search_flights: "true", departure: $F(departure), destination: $F(destination), departureDate: $F(departureDate), arrivalDate: $F(arrivalDate), seats: $F(seats)   },
-        onSuccess: function(ajax){
-            if (ajax.readyState == 4 && ajax.status == 200) {
-                var flights = ajax.responseText;
-                if ($('flights')){
-                    $('flights').innerHTML = flights;
-                }else{
-                    var flightsDiv = document.createElement("DIV");
-                    flightsDiv.id = "flights";
-                    flightsDiv.innerHTML = flights;
-                    form.parentNode.appendChild(flightsDiv);
-                }                
+    $.get("get_data.php", 
+    {search_flights: "true", departure: $('#departure').val(), destination: $('#destination').val(), departureDate: $('#departureDate').val(), arrivalDate: $('#arrivalDate').val(), seats: $('#seats').val()},
+    function(data,status){
+        if(status=="success"){
+            var flights = data;
+            if ($('#flights').length){
+                $('#flights')[0].innerHTML = flights;
             }else{
-                createFormError(form, "Error on search");
-            }
+                var flightsDiv = document.createElement("DIV");
+                flightsDiv.id = "flights";
+                flightsDiv.innerHTML = flights;
+                form[0].parentNode.appendChild(flightsDiv);
+            }                
+        }else{
+            createFormError(form[0], "Error on search");
         }
-        });
-        return false;
+    });
+    return false;
 }     
 
 
 
-if ($('cities-form')){
-    $('cities-form').onsubmit =  function(e) { 
-        searchCities(this);
+if ($('#cities-form').length){
+    $('#cities-form').submit(function (){
+        searchCities($(this));
         return false;
-    };    
+    });  
     function searchCities(form){
-        var city = $("city");
-        var country = $("country");
-        var country_code = $("country-code");
-        var continent = $("continent");
-        new Ajax.Request("get_data.php", {
-            method: "get",
-            parameters: {search_cities: "true", city_search: $F(city), country: $F(country), country_code: $F(country_code), continent: $F(continent)},
-            onSuccess: function(ajax){
-                if (ajax.readyState == 4 && ajax.status == 200) {
-                    var cities = ajax.responseText;
-                    if ($('cities_result')){
-                        $('cities_result').innerHTML = cities;
+        var city = $("#city");
+        var country = $("#country");
+        var country_code = $("#country-code");
+        var continent = $("#continent");
+        $.get("get_data.php", 
+        {search_cities: "true", city_search: city.val(), country: country.val(), country_code: country_code.val(), continent: continent.val()},
+        function(data,status){
+            if(status=="success"){
+                var cities = data;
+                    if ($('#cities_result').length){
+                        $('#cities_result')[0].innerHTML = cities;
                     }else{
                         var citiesDiv = document.createElement("DIV");
                         citiesDiv.id = "cities_result";
                         citiesDiv.innerHTML = cities;
-                        form.parentNode.appendChild(citiesDiv);
+                        form[0].parentNode.appendChild(citiesDiv);
                     }                
                 }else{
-                    createFormError(form, "Error on search");
+                    createFormError(form[0], "Error on search");
                 }
-            }
-            });
+        });
             return false;
     }
        
 }
 
 
-if ($('flights-form')){
-    $('flights-form').onsubmit =  function(e) { 
+if ($('#flights-form').length){
+    $('#flights-form').submit(function (){
         check_select(departure);
         check_select(destination);
         check_seats();
         check_date(departureDate);
         check_date(arrivalDate);
-        if (new Date($F(departureDate)) != "Invalid Date" && new Date($F(arrivalDate)) != "Invalid Date")
+        if (new Date(departureDate.val()) != "Invalid Date" && new Date(arrivalDate.val()) != "Invalid Date")
             check_dates(departureDate, arrivalDate);
-        var elements =  $('flights-form').getElements();
-        var hasError = elements.find(function(element) {
-            return element.classList.contains("error-input");
-        });
+
+        var hasError = $('#flights-form').find('.error-input').length > 0;
         if (hasError){
-            e.stop();
-            createFormError($('flights-form'), "Departure date must be before return date.");
+            createFormError($('#flights-form')[0], "Departure date must be before return date.");
         }else{
-            createFlight(this);
-            
+            createFlight($(this));  
         }
         
         return false;
-    };
+    });
     function createFlight(form){
-        new Ajax.Request("get_data.php", {
-            method: "post",
-            parameters: {create_flight: "true", departure: $F(departure), destination: $F(destination), departureDate: $F(departureDate), arrivalDate: $F(arrivalDate), seats: $F(seats)   },
-            onSuccess: function(ajax){
-                if (ajax.readyState == 4 && ajax.status == 200) {
-                    var result = ajax.responseText;
-                    if (result == "1"){
-                        createFormSuccess(form, "Flight added succesfully.");
-                        form.reset();
-                        check_select(departure);
-                        check_select(destination);
-                        check_seats();
-                        check_date(departureDate);
-                        check_date(arrivalDate);
-                        searchFlights(form);
-                    }else{
-                        createFormError(form, "Error on insert.");
-                    }
-                    
+        $.post("get_data.php", {create_flight: "true", departure: departure.val(), destination: destination.val(), departureDate: departureDate.val(), arrivalDate: arrivalDate.val(), seats: seats.val()   },
+        function(data,status){
+            if(status=="success"){
+                var result = data;
+                if (result == "1"){
+                    createFormSuccess(form[0], "Flight added succesfully.");
+                    form[0].reset();
+                    check_select(departure);
+                    check_select(destination);
+                    check_seats();
+                    check_date(departureDate);
+                    check_date(arrivalDate);
+                    searchFlights(form);
                 }else{
-                    createFormError(form, "Error on insert.");
+                    createFormError(form[0], "Error on insert.");
                 }
+                
+            }else{
+                createFormError(form[0], "Error on insert.");
             }
-            });
-            return false;
+        });
+        return false;
     }  
 }
 
@@ -238,68 +219,77 @@ function hasFormError(form){
 
 
 function check_select(element){
-    var value = $F(element);
+    var value = element.val();
     if (value === ""){ setError(element);return;}
     success(element);
 }
 
 function check_date(element){
-    var value = new Date($F(element));
+    var value = new Date(element.val());
     if (value == "Invalid Date"){ setError(element);return;}
     success(element);
 }
 
 function check_dates(elementDate1, elementDate2){
-    date1 = new Date($F(elementDate1));
-    date2 = new Date($F(elementDate2));
+    date1 = new Date(elementDate1.val());
+    date2 = new Date(elementDate2.val());
     if (date1 > date2){
         setError(elementDate1);
         setError(elementDate2);
-        showFormError($("search-form"), "Departure date must be before return date.");        
+        showFormError($("#search-form"), "Departure date must be before return date.");        
     }else{
         success(elementDate1);
         success(elementDate2);
-        removeFormError($("search-form"));
+        removeFormError($("#search-form"));
     }
 }
 
 function check_seats(){
-    var num_seats = parseInt($F(seats));
-    var max = parseInt(seats.max);
-    var min = parseInt(seats.min);
+    var num_seats = +$('#seats').val();
+    var max = +$('#seats').attr("max");
+    var min = +$('#seats').attr("min")
     if (isNaN(num_seats) || num_seats > max || num_seats < min){
-        setError(seats);
+        setError($('#seats'));
         return;
     }
-    success(seats);
+    success($('#seats'));
 }
 
 function check_email(element){
     var regex = /[a-z0-9._%+-]+@[a-z0-9]+\.[a-z]{2,4}$/;
-    var isValid = regex.test($F(element));
+    var isValid = regex.test(element.val());
     if (isValid) success(element);
     else setError(element);
 }
 
 function setError(element){
-    if (!element.classList.contains("error-input"))element.classList.add("error-input");
-    if (element.classList.contains("success-input"))element.classList.remove("success-input");
+    if(!element.hasClass("error-input")){
+        element.addClass("error-input");
+    }
+
+    if(element.hasClass("success-input")){
+        element.removeClass("success-input");
+    }
 }
 
 function removeError(element){
-    if (element.classList.contains("error-input"))element.classList.remove("error-input");
+    if(element.hasClass("error-input")){
+        element.removeClass("error-input");
+    }
 }
 
 function success(element){
     removeError(element);
-    if (!element.classList.contains("success-input"))element.classList.add("success-input");
+    if(!element.hasClass("success-input")){
+        element.addClass("success-input");
+    }
 }
 
 function showFormError(form, message){
-    var errorForm = $("errorForm");
-    if (errorForm){ 
-        errorForm.innerText = message;
-        errorForm.style.visibility = 'visible';
+    var errorForm = $("#errorForm");
+    if (errorForm.length){ 
+        errorForm[0].innerText = message;
+        errorForm[0].style.visibility = 'visible';
     }
 }
 
@@ -322,5 +312,5 @@ function createFormSuccess(form, message){
 }
 
 function removeFormError(form){
-    if ($("errorForm")) $("errorForm").style.visibility = 'hidden';
+    if ($("#errorForm").length) $("#errorForm")[0].style.visibility = 'hidden';
 }

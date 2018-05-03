@@ -21,11 +21,13 @@ if ($_SERVER["REQUEST_METHOD"] == "GET")
     if(!empty($_GET["city"])) {
         $string = $_GET["city"];
         $cities = $dbWorld->query("SELECT id, name from `cities` where name LIKE '$string%' order by name ASC");
-        foreach ($cities as $city) {
-            $value = $city['name'];
-            $id = $city['id'];
-            echo $value . ",";
-        }
+        echo json_encode($cities->fetchAll(PDO::FETCH_ASSOC));
+    }
+
+    if(!empty($_GET["city_json"])) {
+        $string = $_GET["city_json"];
+        $cities = $dbWorld->query("SELECT id, name from `cities` where name LIKE '$string%' order by name ASC");
+        echo json_encode($cities->fetchAll(PDO::FETCH_ASSOC));
     }
 
     if (!empty($_GET["search_flights"])){

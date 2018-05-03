@@ -19,6 +19,8 @@ if (departureInput.length){
         function(data,status){
             showAutocomplete(data,status, departureInput);
         });
+
+        
     });
     $(document).bind('click', function(event){
         closeAutocomplete(departureInput, event.target);
@@ -46,6 +48,7 @@ if (city.length){
             showAutocomplete(data,status, city);
         });
     });
+    
     $(document).bind('click', function(event){
         closeAutocomplete(city, event.target);
     });
@@ -80,6 +83,43 @@ function autocomplete(input, cities){
                 city.innerHTML += "<input type='hidden' value='" + element + "'>";
                 city.onclick = function(e){
                     input.val(this.lastChild.value); //= $F(this.select("input")[0]);
+                    closeAutocomplete(input[0]);
+                };
+                occurrences.appendChild(city);
+            }
+        });
+    }
+}
+
+function showAutocomplete_json(data,status, input){
+    if (status == "success") {
+        var cities = data;
+        if (cities){
+            autocomplete(input, departures.slice(0,5));
+        }else{
+            closeAutocomplete(input[0]);
+        }
+    }        
+}
+
+function autocomplete_json(input, cities){
+    var occurrences, city, index, val = input.val();
+    closeAutocomplete(input[0]);
+    currentFocus = -1;
+    occurrences = document.createElement("DIV");
+    occurrences.id = "autocomplete-list";
+    occurrences.classList.add("autocomplete-items");
+    input[0].parentNode.appendChild(occurrences);
+
+    if (cities){
+        cities.forEach(function(element) {
+            if (element['name'].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                city = document.createElement("DIV");
+                city.innerHTML = "<strong>" + element['name'].substr(0, val.length) + "</strong>";
+                city.innerHTML += element['name'].substr(val.length);
+                city.innerHTML += "<input type='hidden' value='" + element['name'] + "'>";
+                city.onclick = function(e){
+                    input.val(this.lastChild.value);
                     closeAutocomplete(input[0]);
                 };
                 occurrences.appendChild(city);

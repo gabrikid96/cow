@@ -93,7 +93,7 @@ if ($('#arrivalDate').length){
         }
     });
 }
-
+c = {};
 if ($('#search-form').length){
     $('#search-form').submit(function (){
         check_select($('#departure'));
@@ -121,6 +121,27 @@ function searchFlights(form){
                 flightsDiv.id = "flights";
                 flightsDiv.innerHTML = flights;
                 form[0].parentNode.appendChild(flightsDiv);
+            
+                $("#flights_table").find("tbody").find("div").draggable({ revert: true, 
+                    start: function( event, ui ) {
+                        if (!$("#shopCart").length){
+                            var button = "<div id='shopCart' class='btn btn-info btn-lg text-center'><span class='glyphicon glyphicon-shopping-cart'></span> Shopping Cart (0)</div>";
+                            var test = $(button);
+                            test.data("num", 0);
+                            $("#flights_table").before(test);
+                            $( "#shopCart" ).droppable({
+                                activeClass: "ui-state-default",
+                                hoverClass: "btn-success",
+                                accept: ":not(.ui-sortable-helper)",
+                                drop: function( event, ui ) {
+                                    $(this).data("num", test.data("num") + 1);
+                                    $(this).text("Shopping Cart (" + test.data("num") + ")")
+                                }
+                              });
+                        }                        
+                } });
+
+                
             }                
         }else{
             createFormError(form[0], "Error on search");

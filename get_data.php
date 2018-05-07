@@ -121,9 +121,10 @@ function get_cities_filter_query($db, $continent, $city_name, $country, $country
 
 
 function getFlightsTable($flights){
-    $table = "<div class='container text-center'> <table class='table table-striped'>"."
+    $table = "<div class='container text-center'> <table id='flights_table' class='table table-striped'>"."
     <thead>
         <tr>
+            <th>Drag to cart</th>
             <th>Departure city</th>
             <th>Arrival city</th>
             <th>Departure date</th>
@@ -137,6 +138,7 @@ function getFlightsTable($flights){
         
         foreach ($flights as $flights) {
             $table .= "<tr>";
+            $table .= "<td><div class='ui-widget-content'><i class='fas fa-plane'></i></div></td>";
             $table .= "<td>".$flights['departure']."</td>";
             $table .= "<td>".$flights['arrival']."</td>";
             $table .= "<td>".$flights['departure_date']."</td>";

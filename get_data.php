@@ -33,8 +33,31 @@ if ($_SERVER["REQUEST_METHOD"] == "GET")
     if (!empty($_GET["search_flights"])){
         try{
             $sql = get_flights_filter_query($dbWorld, $_GET['departure'], $_GET['destination'], $_GET['departureDate'], $_GET['arrivalDate'], $_GET['seats']);
+            //echo $sql;
             $flights = $dbWorld->query($sql);
-            echo getFlightsTable($flights);
+            if (strcmp($_GET["type"], "json") === 0){
+                echo json_encode($flights->fetchAll(PDO::FETCH_ASSOC));
+            }else if (strcmp($_GET["type"], "xml") === 0){
+                header('Content-Type: application/xml');
+                $xmldoc = new DOMDocument('1.0', 'UTF-8');
+                $flights_tag = $xmldoc->createElement("flights");
+                
+                 
+                foreach ($flights as $flight) {
+                    $flight_tag = $xmldoc->createElement("flight"); 
+                    $flight_tag->setAttribute("departure", $flight["departure"]);
+                    $flight_tag->setAttribute("arrival", $flight["arrival"]);
+                    $flight_tag->setAttribute("departure_date", $flight["departure_date"]);
+                    $flight_tag->setAttribute("arrival_date", $flight["arrival_date"]);
+                    $flight_tag->setAttribute("seats_available", $flight["seats_available"]);
+                    $flights_tag->appendChild($flight_tag);
+                }
+                $xmldoc->appendChild($flights_tag); 
+                echo preg_replace( "/<\?xml.+?\?>/", "", $xmldoc->saveXML());
+                //print $xmldoc->saveXML();
+                 
+            }
+            
         }catch(PDOException $ex){
         }
     }
@@ -43,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET")
         try{
             $sql = get_cities_filter_query($dbWorld, $_GET['continent'], $_GET['city_search'], $_GET['country'], $_GET['country_code']);
             $cities = $dbWorld->query($sql);
-            echo getCitiesTable($cities);
+            echo json_encode($cities->fetchAll(PDO::FETCH_ASSOC));
         }catch(PDOException $ex){
         }
     }
@@ -59,7 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET")
     if (!empty($_GET["get_cities"])){
         try{
             $cities = $dbWorld->query("SELECT id, name from `cities` order by name ASC");
-            echo getCitiesOptions($cities);
+            echo json_encode($cities->fetchAll(PDO::FETCH_ASSOC));
         }catch(PDOException $ex){
         }
     }
@@ -85,12 +108,11 @@ function get_flights_filter_query($db, $departure_id, $arrival_id, $departure_da
     $arrival_date = !empty($arrival_date) ? $db->quote(date('Y-m-d', strtotime($arrival_date))) : "";
 
     //!empty($departure_id) ? " departure LIKE '%$departure_id%' " : "",
-
     $filters = array(!empty($departure_id) ? " departure LIKE '%$departure_id%' " : "",
     !empty($arrival_id) ? " arrival LIKE '%$arrival_id%' " : "",
     !empty($departure_date) ? " departure_date >= $departure_date " : "",
     !empty($arrival_date) ? " arrival_date <= $arrival_date " : "",
-    $seats != 0 ? " f.seats_available >= $seats " : "");
+    $seats != 0 ? " seats_available >= $seats " : "");
     
 
     $query .= (!empty($departure_id)  || !empty($arrival_id) || !empty($arrival_date) || !empty($departure_date) || $seats != 0) ? "WHERE " : "";

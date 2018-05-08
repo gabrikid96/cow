@@ -16,15 +16,17 @@ $(document).ready(function() {
     }
 
     if ($('#flights-form').length){
-        searchFlights($('#flights-form')[0]);
+        searchFlights($('#flights-form'));
     }
 
     if (departure.length && departure[0].nodeName == "SELECT" && destination.length && destination[0].nodeName == "SELECT"){
         $.get("get_data.php", {get_cities: "true"}, function(data,status){
             if(status=="success"){
                 var cities = data;
-                departure[0].innerHTML += cities;
-                destination[0].innerHTML += cities;
+                jsonToOptions(data, departure);
+                jsonToOptions(data, destination);
+               /* departure[0].innerHTML += cities;
+                destination[0].innerHTML += cities;*/
             }
         });
     }
@@ -104,45 +106,27 @@ if ($('#search-form').length){
         check_date($('#arrivalDate'));
         if (new Date(departureDate.val()) != "Invalid Date" && new Date(arrivalDate.val()) != "Invalid Date")
             check_dates(departureDate, arrivalDate);
-        searchFlights($(this));
+        searchFlights($(this), true);
+        
+        //addShoppingCart();
         return false;
     }); 
 }
-function searchFlights(form){
+function searchFlights(form, shoppingCart){
+    var type = $("#type").length ? $("#type").val() : "json";
     $.get("get_data.php", 
-    {search_flights: "true", departure: $('#departure').val(), destination: $('#destination').val(), departureDate: $('#departureDate').val(), arrivalDate: $('#arrivalDate').val(), seats: $('#seats').val()},
+    {search_flights: "true", departure: $('#departure').val(), destination: $('#destination').val(), departureDate: $('#departureDate').val(), arrivalDate: $('#arrivalDate').val(), seats: $('#seats').val(), type: type},
     function(data,status){
         if(status=="success"){
-            var flights = data;
-            if ($('#flights').length){
-                $('#flights')[0].innerHTML = flights;
-            }else{
-                var flightsDiv = document.createElement("DIV");
-                flightsDiv.id = "flights";
-                flightsDiv.innerHTML = flights;
-                form[0].parentNode.appendChild(flightsDiv);
+            var table = type.indexOf("json") > -1 ? jsonToTable(data, ['Departure city', 'Arrival city', 'Departure date ', 'Return date', 'Seats available']) : xmlToTable(data, ['Departure city', 'Arrival city', 'Departure date ', 'Return date', 'Seats available']);
+            table.attr("id","flights");
             
-                $("#flights_table").find("tbody").find("div").draggable({ revert: true, 
-                    start: function( event, ui ) {
-                        if (!$("#shopCart").length){
-                            var button = "<div id='shopCart' class='btn btn-info btn-lg text-center'><span class='glyphicon glyphicon-shopping-cart'></span> Shopping Cart (0)</div>";
-                            var test = $(button);
-                            test.data("num", 0);
-                            $("#flights_table").before(test);
-                            $( "#shopCart" ).droppable({
-                                activeClass: "ui-state-default",
-                                hoverClass: "btn-success",
-                                accept: ":not(.ui-sortable-helper)",
-                                drop: function( event, ui ) {
-                                    $(this).data("num", test.data("num") + 1);
-                                    $(this).text("Shopping Cart (" + test.data("num") + ")")
-                                }
-                              });
-                        }                        
-                } });
-
-                
-            }                
+            if ($('#flights').length){
+                $('#flights').replaceWith(table);
+            }else{
+                table.appendTo(form.parent());
+            }       
+            if (shoppingCart) addShoppingCart(table);
         }else{
             createFormError(form[0], "Error on search");
         }
@@ -167,21 +151,19 @@ if ($('#cities-form').length){
         function(data,status){
             if(status=="success"){
                 var cities = data;
-                    if ($('#cities_result').length){
-                        $('#cities_result')[0].innerHTML = cities;
-                    }else{
-                        var citiesDiv = document.createElement("DIV");
-                        citiesDiv.id = "cities_result";
-                        citiesDiv.innerHTML = cities;
-                        form[0].parentNode.appendChild(citiesDiv);
-                    }                
+                var table = jsonToTable(data, ['City', 'Country', 'Country Code ', 'Continent']);
+                table.attr("id","cities_result");
+                if ($('#cities_result').length){
+                    $('#cities_result').replaceWith(table);
                 }else{
-                    createFormError(form[0], "Error on search");
-                }
+                    table.appendTo(form.parent());
+                }                
+            }else{
+                createFormError(form[0], "Error on search");
+            }
         });
             return false;
-    }
-       
+    }       
 }
 
 
@@ -335,3 +317,103 @@ function createFormSuccess(form, message){
 function removeFormError(form){
     if ($("#errorForm").length) $("#errorForm")[0].style.visibility = 'hidden';
 }
+
+function jsonToTable(json, header){
+    var container = $("<div class='container text-center'></div>");
+    var table = $("<table id='flights_table' class='table table-striped'>");
+    var trh = $('<tr>');
+    $.each(header, function(i, item) {
+        var td = $('<td>').text(item);
+        td.appendTo(trh);
+    });
+    var thead = $('<thead>');
+    trh.appendTo(thead);
+    thead.appendTo(table);
+    var tbody = $('<tbody>');
+    $.each(JSON.parse(json), function(i, item) {
+        var tr = $('<tr>');
+            $.each(item, function(i2, item2){
+                $('<td>').text(item2).appendTo(tr);
+            });
+        tr.appendTo(tbody);
+    });
+    tbody.appendTo(table);
+    table.appendTo(container);
+    return container;
+}
+
+function xmlToTable(xml, header){
+    /*var container = $("<div class='container text-center'></div>");
+	var tabla = $("<table id='flights_table' class='table table-striped'>");
+	var tbody = $(document.createElement("tbody"));
+	var tr = $(document.createElement("tr"));
+
+	$.each(xml.firstChild.attributes,function(key,value){
+		var th = crearTagTh(value.localName);
+	    tr.append(th);
+	});
+	tbody.append(tr);
+	$.each(xml, function(key,objeto){
+		var tr = $(document.createElement("tr"));
+		$.each(objeto.attributes,function(key,atributo){
+			var td = crearTagTd(objeto.getAttribute(atributo.localName));
+		    tr.append(td);
+			
+		});
+		tbody.append(tr);
+	});
+    tabla.append(tbody);
+    container.append(tabla);
+	return container;*/
+}
+function jsonToOptions(json, select){
+    $.each(JSON.parse(json), function(i, item) {
+        var option = $("<option>");
+        option.text(item["name"]);
+        option.attr("value", item["id"]);
+        option.appendTo(select);
+    });
+}
+
+function addShoppingCart(table){ 
+    table.find('thead tr').prepend("<td>Add to cart</td>");
+    table.find('tbody tr').each(function(){
+        $(this).prepend("<td><div class='ui-widget-content text-center'><i class='fas fa-plane'></i></div></td>");
+    });
+   $("#flights_table").find("tbody").find("div").draggable({ revert: true, 
+    start: function( event, ui ) {
+        if (!$("#shopCart").length){
+            var button = "<div id='shopCart' class='btn btn-info btn-lg text-center'><span class='glyphicon glyphicon-shopping-cart'></span>Shopping Cart (0)</div>";
+            var test = $(button);
+            test.data("num", 0);
+            $("#flights_table").before(test);
+            $( "#shopCart" ).droppable({
+                activeClass: "ui-state-default",
+                hoverClass: "btn-success",
+                accept: ":not(.ui-sortable-helper)",
+                drop: function( event, ui ) {
+                    runEffect($(this), "bounce");
+                    $(this).data("num", test.data("num") + 1);
+                    $(this).text("Shopping Cart (" + test.data("num") + ")");
+                    $("<span class='glyphicon glyphicon-shopping-cart'></span>").prependTo($(this));
+                }
+              });
+        }                        
+    } });      
+}
+
+function runEffect(element, effect) {
+    // Most effect types need no options passed by default
+    var options = {};
+    // some effects have required parameters
+    if ( effect === "scale" ) {
+      options = { percent: 50 };
+    } else if ( effect === "transfer" ) {
+      options = { to: "#button", className: "ui-effects-transfer" };
+    } else if ( effect === "size" ) {
+      options = { to: { width: 200, height: 60 } };
+    }
+
+    // Run the effect
+    element.effect( effect, options, 500 );
+  }

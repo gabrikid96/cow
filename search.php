@@ -53,8 +53,17 @@ include('header.php');
                     </div>
                 </div>
                 <br>
-                <div class="text-center">
-                    <button class="btn btn-success">Search flight</button>
+                <div class="row">
+                    <div class="col-md-2 col-md-offset-4">
+                        <button class="btn btn-success">Search flight</button>
+                    </div>
+                    <div class="col-md-2 ">
+                        <select class="form-control" id="type" name="type">
+                            <option value="json" selected>JSON</option>
+                            <option value="xml">XML</option>
+                        </select>
+                    </div>
+                    
                 </div>
             </div>
             <div id='errorForm' class='alert alert-danger text-center col-md-6 col-md-offset-3' role='alert' style='margin-top: 10px; visibility: hidden;'>

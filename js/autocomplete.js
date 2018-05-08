@@ -17,7 +17,7 @@ if (departureInput.length){
         $.get("get_data.php", 
         {city: departureInput.val()},
         function(data,status){
-            showAutocomplete(data,status, departureInput);
+            showAutocomplete_json(data,status, departureInput);
         });
 
         
@@ -32,7 +32,7 @@ if (destinationInput.length){
         $.get("get_data.php", 
         {city: destinationInput.val()},
         function(data,status){
-            showAutocomplete(data,status, destinationInput);
+            showAutocomplete_json(data,status, destinationInput);
         });
     });
     $(document).bind('click', function(event){
@@ -45,7 +45,7 @@ if (city.length){
         $.get("get_data.php", 
         {city: city.val()},
         function(data,status){
-            showAutocomplete(data,status, city);
+            showAutocomplete_json(data,status, city);
         });
     });
     
@@ -95,7 +95,7 @@ function showAutocomplete_json(data,status, input){
     if (status == "success") {
         var cities = data;
         if (cities){
-            autocomplete(input, departures.slice(0,5));
+            autocomplete_json(input, data);
         }else{
             closeAutocomplete(input[0]);
         }
@@ -103,26 +103,25 @@ function showAutocomplete_json(data,status, input){
 }
 
 function autocomplete_json(input, cities){
-    var occurrences, city, index, val = input.val();
+    var occurrences, city, text, val = input.val();
     closeAutocomplete(input[0]);
     currentFocus = -1;
-    occurrences = document.createElement("DIV");
-    occurrences.id = "autocomplete-list";
-    occurrences.classList.add("autocomplete-items");
-    input[0].parentNode.appendChild(occurrences);
-
+    occurrences = $("<div>");
+    occurrences.attr("id","autocomplete-list");
+    occurrences.addClass("autocomplete-items");
+    occurrences.appendTo(input.parent());
     if (cities){
-        cities.forEach(function(element) {
-            if (element['name'].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
-                city = document.createElement("DIV");
-                city.innerHTML = "<strong>" + element['name'].substr(0, val.length) + "</strong>";
-                city.innerHTML += element['name'].substr(val.length);
-                city.innerHTML += "<input type='hidden' value='" + element['name'] + "'>";
-                city.onclick = function(e){
-                    input.val(this.lastChild.value);
+        $.each(JSON.parse(cities).slice(0,5), function(i, item) {
+            if (item["name"].substr(0, val.length).toUpperCase() == val.toUpperCase()){
+                city = $("<div>");
+                city.append($("<strong>" + item["name"].substr(0, val.length) + "</strong>"));
+                city.text(city.text() + item["name"].substr(val.length));
+                city.append($("<input type='hidden' value='" + item["name"] + "'>"));
+                city.click(function() {
+                    input.val($(this).find("input").val());
                     closeAutocomplete(input[0]);
-                };
-                occurrences.appendChild(city);
+                });
+                occurrences.append(city);
             }
         });
     }

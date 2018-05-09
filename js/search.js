@@ -5,6 +5,16 @@ var departureDate = $('#departureDate');
 var arrivalDate = $('#arrivalDate');
 
 $(document).ready(function() {
+    $(":button").each(function(){
+        $(this).bind('click', function(){
+            runEffect($(this), "pulsate");
+        });
+    });
+    $("input:submit").each(function(){
+        $(this).bind('click', function(){
+            runEffect($(this), "pulsate");
+        });
+    });
     if ($('#continent').length){
         $.get("get_data.php", {get_continents: "true"}, function(data,status){
             if(status=="success"){

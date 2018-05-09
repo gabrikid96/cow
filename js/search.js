@@ -5,6 +5,16 @@ var departureDate = $('#departureDate');
 var arrivalDate = $('#arrivalDate');
 
 $(document).ready(function() {
+    $(":button").each(function(){
+        $(this).bind('click', function(){
+            runEffect($(this), "pulsate");
+        });
+    });
+    $("input:submit").each(function(){
+        $(this).bind('click', function(){
+            runEffect($(this), "pulsate");
+        });
+    });
     if ($('#continent').length){
         $.get("get_data.php", {get_continents: "true"}, function(data,status){
             if(status=="success"){
@@ -134,9 +144,12 @@ function searchFlights(form){
                                 hoverClass: "btn-success",
                                 accept: ":not(.ui-sortable-helper)",
                                 drop: function( event, ui ) {
+                                    runEffect($(this), "bounce");
                                     $(this).data("num", test.data("num") + 1);
-                                    $(this).text("Shopping Cart (" + test.data("num") + ")")
+                                    $(this).text("Shopping Cart (" + test.data("num") + ")");
+                                    $("<span class='glyphicon glyphicon-shopping-cart'></span>").prependTo($(this));
                                 }
+                                
                               });
                         }                        
                 } });
@@ -335,3 +348,18 @@ function createFormSuccess(form, message){
 function removeFormError(form){
     if ($("#errorForm").length) $("#errorForm")[0].style.visibility = 'hidden';
 }
+function runEffect(element, effect) {
+    // Most effect types need no options passed by default
+    var options = {};
+    // some effects have required parameters
+    if ( effect === "scale" ) {
+      options = { percent: 50 };
+    } else if ( effect === "transfer" ) {
+      options = { to: "#button", className: "ui-effects-transfer" };
+    } else if ( effect === "size" ) {
+      options = { to: { width: 200, height: 60 } };
+    }
+
+    // Run the effect
+    element.effect( effect, options, 500 );
+  }

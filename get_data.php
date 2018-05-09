@@ -38,26 +38,9 @@ if ($_SERVER["REQUEST_METHOD"] == "GET")
             if (strcmp($_GET["type"], "json") === 0){
                 echo json_encode($flights->fetchAll(PDO::FETCH_ASSOC));
             }else if (strcmp($_GET["type"], "xml") === 0){
-                header('Content-Type: application/xml');
-                $xmldoc = new DOMDocument('1.0', 'UTF-8');
-                $flights_tag = $xmldoc->createElement("flights");
-                
-                 
-                foreach ($flights as $flight) {
-                    $flight_tag = $xmldoc->createElement("flight"); 
-                    $flight_tag->setAttribute("departure", $flight["departure"]);
-                    $flight_tag->setAttribute("arrival", $flight["arrival"]);
-                    $flight_tag->setAttribute("departure_date", $flight["departure_date"]);
-                    $flight_tag->setAttribute("arrival_date", $flight["arrival_date"]);
-                    $flight_tag->setAttribute("seats_available", $flight["seats_available"]);
-                    $flights_tag->appendChild($flight_tag);
+                echo getFlightsXml($flights);                 
                 }
-                $xmldoc->appendChild($flights_tag); 
-                echo preg_replace( "/<\?xml.+?\?>/", "", $xmldoc->saveXML());
-                //print $xmldoc->saveXML();
                  
-            }
-            
         }catch(PDOException $ex){
         }
     }
@@ -66,7 +49,11 @@ if ($_SERVER["REQUEST_METHOD"] == "GET")
         try{
             $sql = get_cities_filter_query($dbWorld, $_GET['continent'], $_GET['city_search'], $_GET['country'], $_GET['country_code']);
             $cities = $dbWorld->query($sql);
+            if (strcmp($_GET["type"], "json") === 0){
             echo json_encode($cities->fetchAll(PDO::FETCH_ASSOC));
+            }else if (strcmp($_GET["type"], "xml") === 0){
+                echo getCitiesXml($cities);                 
+            }
         }catch(PDOException $ex){
         }
     }
@@ -74,7 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET")
     if (!empty($_GET["get_continents"])){
         try{
             $continents = $dbWorld->query("SELECT continent from `countries` GROUP BY continent");
-            echo getContinentsOptions($continents);
+            echo json_encode($continents->fetchAll(PDO::FETCH_ASSOC));
         }catch(PDOException $ex){
         }
     }
@@ -175,31 +162,6 @@ function getFlightsTable($flights){
     return $table;
 }
 
-function getCitiesTable($cities){
-    $table = "<div class='container text-center'> <table class='table table-striped'>"."
-    <thead>
-        <tr>
-            <th>City</th>
-            <th>Country</th>
-            <th>Country Code</th>
-            <th>Continent</th>
-        </tr>
-    </thead>
-    <tbody>";
-    if ($cities != null && $cities->rowCount() > 0){
-        foreach ($cities as $city) {
-            $table .= "<tr>";
-            $table .= "<td>".$city['name']."</td>";
-            $table .= "<td>".$city['country']."</td>";
-            $table .= "<td>".$city['country_code']."</td>";
-            $table .= "<td>".$city['continent']."</td>";
-            $table .= "</tr>";
-        }
-    }
-    $table .= "</tbody></table></div>";
-    return $table;
-}
-
 function getContinentsOptions($continents){
     $options = "";
     foreach ($continents as $continent) {
@@ -233,5 +195,42 @@ function insert_flight($db){
     }catch(PDOException $ex){
         return false;
     } 
+}
+
+function getFlightsXml($flights){
+    header('Content-Type: application/xml');
+    $xmldoc = new DOMDocument('1.0', 'UTF-8');
+    $flights_tag = $xmldoc->createElement("flights");
+    
+     
+    foreach ($flights as $flight) {
+        $flight_tag = $xmldoc->createElement("flight"); 
+        $flight_tag->setAttribute("departure", $flight["departure"]);
+        $flight_tag->setAttribute("arrival", $flight["arrival"]);
+        $flight_tag->setAttribute("departure_date", $flight["departure_date"]);
+        $flight_tag->setAttribute("arrival_date", $flight["arrival_date"]);
+        $flight_tag->setAttribute("seats_available", $flight["seats_available"]);
+        $flights_tag->appendChild($flight_tag);
+    }
+    $xmldoc->appendChild($flights_tag); 
+    return preg_replace( "/<\?xml.+?\?>/", "", $xmldoc->saveXML());
+}
+
+function getCitiesXml($cities){
+    header('Content-Type: application/xml');
+    $xmldoc = new DOMDocument('1.0', 'UTF-8');
+    $cities_tag = $xmldoc->createElement("cities");
+    
+     
+    foreach ($cities as $city) {
+        $city_tag = $xmldoc->createElement("city"); 
+        $city_tag->setAttribute("name", $city["name"]);
+        $city_tag->setAttribute("country", $city["country"]);
+        $city_tag->setAttribute("country_code", $city["country_code"]);
+        $city_tag->setAttribute("continent", $city["continent"]);
+        $cities_tag->appendChild($city_tag);
+    }
+    $xmldoc->appendChild($cities_tag); 
+    return preg_replace( "/<\?xml.+?\?>/", "", $xmldoc->saveXML());
 }
 ?>

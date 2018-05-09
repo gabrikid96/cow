@@ -8,9 +8,7 @@ $(document).ready(function() {
     if ($('#continent').length){
         $.get("get_data.php", {get_continents: "true"}, function(data,status){
             if(status=="success"){
-                var continents = data;
-                var select = $(continent)[0];
-                select.innerHTML += continents;
+                jsonToOptions2(data, $('#continent'));
             }
         });
     }
@@ -146,12 +144,13 @@ if ($('#cities-form').length){
         var country = $("#country");
         var country_code = $("#country-code");
         var continent = $("#continent");
+        var type = $("#type").length ? $("#type").val() : "json";
         $.get("get_data.php", 
-        {search_cities: "true", city_search: city.val(), country: country.val(), country_code: country_code.val(), continent: continent.val()},
+        {search_cities: "true", city_search: city.val(), country: country.val(), country_code: country_code.val(), continent: continent.val(), type : type},
         function(data,status){
             if(status=="success"){
                 var cities = data;
-                var table = jsonToTable(data, ['City', 'Country', 'Country Code ', 'Continent']);
+                var table = type.indexOf("json") > -1 ? jsonToTable(data, ['City', 'Country', 'Country Code ', 'Continent']) : xmlToTable(data, ['City', 'Country', 'Country Code ', 'Continent']);
                 table.attr("id","cities_result");
                 if ($('#cities_result').length){
                     $('#cities_result').replaceWith(table);
@@ -343,34 +342,46 @@ function jsonToTable(json, header){
 }
 
 function xmlToTable(xml, header){
-    /*var container = $("<div class='container text-center'></div>");
-	var tabla = $("<table id='flights_table' class='table table-striped'>");
-	var tbody = $(document.createElement("tbody"));
-	var tr = $(document.createElement("tr"));
-
-	$.each(xml.firstChild.attributes,function(key,value){
-		var th = crearTagTh(value.localName);
-	    tr.append(th);
-	});
-	tbody.append(tr);
-	$.each(xml, function(key,objeto){
-		var tr = $(document.createElement("tr"));
-		$.each(objeto.attributes,function(key,atributo){
-			var td = crearTagTd(objeto.getAttribute(atributo.localName));
-		    tr.append(td);
-			
-		});
-		tbody.append(tr);
-	});
-    tabla.append(tbody);
-    container.append(tabla);
-	return container;*/
+    var container = $("<div class='container text-center'></div>");
+    var table = $("<table id='flights_table' class='table table-striped'>");
+    var trh = $('<tr>');
+    $.each(header, function(i, item) {
+        var td = $('<td>').text(item);
+        td.appendTo(trh);
+    });
+    var thead = $('<thead>');
+    trh.appendTo(thead);
+    thead.appendTo(table);
+    var tbody = $('<tbody>');
+    var parent = $(xml).children();
+    parent.children().each(function(){
+        var flight = $(this);
+        var tr = $('<tr>');
+        $.each(this.attributes, function(i, attrib){
+            var name = attrib.name;
+            var value = attrib.value;
+            $('<td>').text(value).appendTo(tr);
+         });
+         tr.appendTo(tbody);
+    });
+    tbody.appendTo(table);
+    table.appendTo(container);
+    return container;
 }
 function jsonToOptions(json, select){
     $.each(JSON.parse(json), function(i, item) {
         var option = $("<option>");
         option.text(item["name"]);
         option.attr("value", item["id"]);
+        option.appendTo(select);
+    });
+}
+
+function jsonToOptions2(json, select){
+    $.each(JSON.parse(json), function(i, item) {
+        var option = $("<option>");
+        option.text(item["continent"]);
+        option.attr("value", item["continent"]);
         option.appendTo(select);
     });
 }

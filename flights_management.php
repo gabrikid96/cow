@@ -32,6 +32,12 @@ include('header.php');
                             <option value="" disabled selected>Continent</option>
                         </select>
                     </div>
+                    <div class="col-md-2 ">
+                        <select class="form-control" id="type" name="type">
+                            <option value="json" selected>JSON</option>
+                            <option value="xml">XML</option>
+                        </select>
+                    </div>
                     <input class="btn btn-success" type="submit" value="Search flight" name="world_search">
                 </div>
             </form>
